@@ -1,0 +1,16 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "Simple API for dealing with data.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jacob Strong",
+  "license": "MIT",
+  "dependencies": {
+    "csv-parse": "^4.3.1",
+    "date-fns": "^1.30.1",
+    "express": "^4.16.4"
+  }
+}
