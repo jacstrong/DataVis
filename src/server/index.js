@@ -2,59 +2,40 @@
 
 let express = require('express')
 let http = require('https')
-let Router = require('./Router')
-let fs = require('fs')
-let parse = require('csv-parse')
-let date = require('date-fns')
+// let Router = require('./Router')
+
+let mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost:27017/test', {useNewUrlParser: true});
+
+
 let app = express()
 // let server = http.createServer(app)
 
-let port = process.env.PORT || 9000;
+let port = process.env.PORT || 3000;
 
-let router = express.Router()
-
-router.use((req, res, next) => {
-    console.log(req.originalUrl)
-    next()
+// DB Setup
+var db = mongoose.connection
+db.on('error', console.error.bind(console, 'connection error:'))
+db.once('open', function() {
+  console.log('DB connection successful')
 })
 
-let homeDataFile = './data/single-fam.csv'
+var allowCrossDomain = function(req, res, next) {
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET');
+    return res.status(200).json({});
+  }
 
-let homeData = []
-let homeDataProcessed = []
-router.route('/fam')
-    .get((req, res) => {
-        let lastdate = ''
-        let sum = 0
-        // let avgNum = 0
-        fs.createReadStream(homeDataFile)
-            .pipe(parse({
-                comment: '#',
-                delimiter: ','
-            }))
-            .on('data', (row) => {
-                console.log(row)
-                let time = row[0].prototype.substring(0, 17)
-                if (time === lastdate) {
-                    sum += row[1]
-                } else {
-                    homeData.push([lastdate, sum])
-                    lastdate = row[0].prototype.substring(0, 17)
-                    sum = 0
-                }
-            })
-            .on('end', () => {
-                console.log(homeData)
-                res.set('Content-Type', 'application/json')
+  next();
+}
+app.use(allowCrossDomain)
 
-                res.send(JSON.stringify(homeData))
-            })
-            .on('error', (error) => {
-                console.log(error)
-            })
-    })
-
-app.use('/api', router)
+app.use('/api', require('./app/routes/api'))
 
 app.use(express.static('./public'))
 
@@ -64,4 +45,4 @@ app.use((req, res, next) => {
 })
 
 // server.listen(9000)
-app.listen(port, () => console.log('Server started on localhost:9000\n'))
+app.listen(port, () => console.log('Server started on localhost:8000\n'))
